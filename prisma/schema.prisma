@@ -12,9 +12,11 @@ model Proposal {
   id          String   @id @default(uuid())
   description String
   options     String[]
-  updated_at  DateTime @default(now())
-  created_at  DateTime @default(now())
   votes       Vote[]
+  endAt       DateTime @default(now()) @map("end_at")
+  activated   Boolean  @default(true)
+  updatedAt   DateTime @default(now()) @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   AggregateVote AggregateVote?
 
@@ -22,29 +24,31 @@ model Proposal {
 }
 
 model Vote {
-  id          String   @id @default(uuid())
-  proposal_id String
-  wallet      String
-  signature   String
-  vote_option String
-  num_votes   String
-  updated_at  DateTime @default(now())
-  created_at  DateTime @default(now())
-  proposal    Proposal @relation(fields: [proposal_id], references: [id])
+  id         String   @id @default(uuid())
+  proposalId String   @map("proposal_id")
+  wallet     String
+  signature  String
+  voteOption String   @map("vote_option")
+  numVotes   String   @map("num_votes")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  proposal   Proposal @relation(fields: [proposalId], references: [id])
 
-  @@unique([proposal_id, wallet])
+  @@unique([proposalId, wallet])
   @@map("votes")
 }
 
 model AggregateVote {
-  id              String   @id @default(uuid())
-  proposal_id     String   @unique
-  total_votes     Json
-  last_updated_at DateTime
-  updated_at      DateTime @default(now())
-  created_at      DateTime @default(now())
+  id            String   @id @default(uuid())
+  proposalId    String   @map("proposal_id")
+  totalVotes    Json     @map("total_votes")
+  totalVoters   Json     @default("{}") @map("total_voters")
+  lastUpdatedAt DateTime @map("last_updated_at")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+  createdAt     DateTime @default(now()) @map("created_at")
 
-  proposal Proposal @relation(fields: [proposal_id], references: [id])
+  proposal Proposal @relation(fields: [proposalId], references: [id])
 
+  @@unique([proposalId])
   @@map("aggregate_votes")
 }

@@ -86,12 +86,23 @@ export async function POST(request: Request) {
           // eslint-disable-next-line
           formatEther(parseEther((currentAggregate.total_votes as Record<string, string>)[voteOption] || "0") + num_votes),
       };
+      // Ensure total_voters is defined (if it can be undefined)
+      const totalVoters = (currentAggregate.total_voters ?? {}) as Record<string, number>;
+
+      const newTotalVoters = {
+        ...totalVoters,
+        [voteOption]: voteOption in totalVoters
+          ? totalVoters[voteOption] + 1
+          : 1,  // start at 1 if the key doesn't exist
+      };
+
 
       // e) Update the row now that it's locked
       await tx.aggregateVote.update({
         where: { id: currentAggregate.id },
         data: {
           total_votes: newTotalVotes,
+          total_voters: newTotalVoters,
         },
       });
 

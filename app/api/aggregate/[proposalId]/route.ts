@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 // app/api/aggregate/[proposalId]/route.ts
 export async function GET(
-  request: Request,
+  _: Request,
   { params: { proposalId } }: { params: { proposalId: string } }
 ) {
   try {
