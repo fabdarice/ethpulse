@@ -10,8 +10,8 @@ const inter = Inter({ subsets: ['latin'] });
 
 
 export const metadata: Metadata = {
-  title: 'Vote Danny Ryan',
-  description: 'Vote for Danny Ryan as Executive Director of the Ethereum Foundation',
+  title: 'Ethereum Pulse',
+  description: 'A dashboard to track the pulse of ethereum hot topics',
 };
 
 export default function RootLayout({

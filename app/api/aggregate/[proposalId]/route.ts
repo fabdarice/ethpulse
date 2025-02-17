@@ -1,7 +1,6 @@
 import { getEthPrice } from "@/lib/ethereum";
 import { prisma } from "@/prisma/prisma";
 import { NextResponse } from "next/server";
-import { formatEther } from "viem";
 
 // app/api/aggregate/[proposalId]/route.ts
 export async function GET(
