@@ -39,8 +39,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
+    console.log("ENTER 1")
+
     // 3) Calculate number of votes based on ETH holdings across EVM chains
-    const num_votes: bigint = await getETHBalanceAllNetworks(wallet);
+    const numVotes: bigint = await getETHBalanceAllNetworks(wallet);
+    console.log("ENTER 2")
 
     // 3) Use transaction WITH row-level locking
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -51,13 +54,13 @@ export async function POST(request: Request) {
           wallet,
           signature,
           voteOption,
-          numVotes: formatEther(num_votes),
+          numVotes: formatEther(numVotes),
         },
       });
 
       // b) Make sure there's an aggregateVote row to lock
       let currentAggregate = await tx.aggregateVote.findUnique({
-        where: { proposal_id: proposalId },
+        where: { proposalId },
       });
       if (!currentAggregate) {
         // Create one if it doesn't exist (so we have a row to lock)
@@ -70,6 +73,8 @@ export async function POST(request: Request) {
         });
       }
 
+      console.log("ENTER 3")
+
       // c) Lock that row in Postgres: SELECT ... FOR UPDATE
       //    This ensures only ONE transaction can modify it at a time.
       await tx.$queryRaw`
@@ -77,17 +82,20 @@ export async function POST(request: Request) {
         WHERE "id" = ${currentAggregate.id} 
         FOR UPDATE
       `;
+      console.log("ENTER 4")
 
       // d) Calculate the new totals
       const newTotalVotes = {
         // eslint-disable-next-line
-        ...(currentAggregate.total_votes as Record<string, string>),
+        ...(currentAggregate.totalVotes as Record<string, string>),
         [voteOption]:
           // eslint-disable-next-line
-          formatEther(parseEther((currentAggregate.total_votes as Record<string, string>)[voteOption] || "0") + num_votes),
+          formatEther(parseEther((currentAggregate.totalVotes as Record<string, string>)[voteOption] || "0") + numVotes),
       };
       // Ensure total_voters is defined (if it can be undefined)
-      const totalVoters = (currentAggregate.total_voters ?? {}) as Record<string, number>;
+      const totalVoters = (currentAggregate.totalVoters ?? {}) as Record<string, number>;
+
+      console.log("ENTER 5")
 
       const newTotalVoters = {
         ...totalVoters,
@@ -105,6 +113,7 @@ export async function POST(request: Request) {
           totalVoters: newTotalVoters,
         },
       });
+      console.log("ENTER 6")
 
       return vote;
     });

@@ -9,14 +9,15 @@ import {
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "wagmi";
-import { Github, Twitter, ThumbsUp, ThumbsDown, Share2, Feather as Ethereum, Users } from "lucide-react";
+import { Github, Twitter, ThumbsDown, Share2, Feather as Ethereum, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { formatNumberWithCommas, formatUSD, timeAgo, truncateAddress } from "@/lib/utils";
+import { formatNumberWithCommas, timeAgo, truncateAddress } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useSignMessage } from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { useRouter } from "next/router";
+
+import { useParams } from 'next/navigation'
 import { UserVote } from "@/interfaces/UserVote";
 import { Proposal } from "@/interfaces/Proposal";
 import { calculateTotalVoters, calculateTotalVotes } from "@/helpers/voteAggregation";
@@ -32,8 +33,10 @@ const PIE_COLORS = [
 ];
 
 export default function ProposalPage() {
-  const router = useRouter();
-  const { proposalId } = router.query;
+
+  const params = useParams()
+  const proposalId = params.proposalId as string;
+
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [userVote, setUserVote] = useState<UserVote | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
@@ -46,6 +49,8 @@ export default function ProposalPage() {
 
   const [recentVotes, setRecentVotes] = useState<Vote[]>([]);
   const [pieData, setPieData] = useState<any[]>([]);
+
+  console.log({ proposalId, userVote, proposal, recentVotes, pieData })
 
   useEffect(() => {
     const fetchProposal = async () => {
@@ -67,7 +72,6 @@ export default function ProposalPage() {
   }, [proposalId])
 
   useEffect(() => {
-
     if (!proposal || !proposal.aggregateVote || proposal.aggregateVote.totalVoters === null) return;
 
     const totalVoters = proposal?.aggregateVote.totalVoters;
@@ -109,53 +113,8 @@ export default function ProposalPage() {
     };
 
     fetchUserVote();
-  }, [isConnected, address, userVote, proposalId]);
+  }, [isConnected, address, proposalId, userVote?.voteOption]);
 
-  // useEffect(() => {
-  //   const fetchVoteData = async () => {
-  //     try {
-  //       const proposalId = process.env.NEXT_PUBLIC_PROPOSAL_ID
-  //       const response = await fetch(`/api/aggregate/${proposalId}`);
-  //
-  //       if (!response.ok) {
-  //         toast({
-  //           title: "Error fetching all votes",
-  //           description: response.statusText,
-  //           variant: "destructive"
-  //         })
-  //         return;
-  //       }
-  //
-  //       const { aggregate, totalVoteUSD } = await response.json();
-  //       const yesVotesBig = parseEther(aggregate.total_votes.YES || "0");
-  //       const noVotesBig = parseEther(aggregate.total_votes.NO || "0");
-  //       const yesVotes = parseFloat(formatEther(yesVotesBig));
-  //       const noVotes = parseFloat(formatEther(noVotesBig));
-  //       const totalVotes = yesVotes + noVotes
-  //       const yesPercentage = totalVotes === 0 ? 0 : (yesVotes / totalVotes) * 100;
-  //       const noPercentage = totalVotes === 0 ? 0 : 100 - yesPercentage;
-  //
-  //       setVoteData({
-  //         yesVotes,
-  //         noVotes,
-  //         totalVotes,
-  //         yesPercentage,
-  //         noPercentage,
-  //         totalVoteUSD,
-  //       });
-  //
-  //     } catch (error) {
-  //       toast({
-  //         title: "Error fetching all votes",
-  //         description: "",
-  //         variant: "destructive"
-  //       })
-  //     }
-  //   };
-  //
-  //   fetchVoteData();
-  // }, [userVote]);
-  //
 
   useEffect(() => {
     const fetchRecentVotes = async () => {
@@ -184,7 +143,7 @@ export default function ProposalPage() {
     };
 
     fetchRecentVotes();
-  }, [userVote]);
+  }, [userVote?.voteOption, proposalId]);
 
   const handleVote = async (voteOption: string) => {
     if (!isConnected) {
@@ -194,7 +153,6 @@ export default function ProposalPage() {
 
     try {
       setIsLoading(true);
-      const proposalId = process.env.NEXT_PUBLIC_PROPOSAL_ID;
       const voteMessage = `I vote ${voteOption} for "${proposal?.description}".\n\nSigning this transaction is free and will not cost you any gas.`;
 
       const signature = await signMessageAsync({
@@ -248,7 +206,7 @@ export default function ProposalPage() {
       return;
     }
 
-    const tweetText = `I voted ${userVote.voteOption} for "${proposal?.description}".\n\nhttps://www.ethpulse.io/${proposalId}`;
+    const tweetText = `I voted "${userVote.voteOption}" for "${proposal?.description}".\n\nhttps://www.ethpulse.io/proposals/${proposalId}`;
     const encodedTweet = encodeURIComponent(tweetText);
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedTweet}`;
     window.open(twitterUrl, '_blank', 'noopener,noreferrer');
@@ -336,7 +294,6 @@ export default function ProposalPage() {
                 disabled={isLoading}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-gray-100/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-                <ThumbsDown className="mr-3 h-5 w-5" />
                 <span className="font-medium tracking-wide">Vote {option}</span>
               </Button>
 
@@ -461,7 +418,7 @@ export default function ProposalPage() {
           </DialogHeader>
           <div className="bg-blue-50 p-6 rounded-lg text-center">
             <h3 className="text-xl mb-4">
-              You voted <span className="text-green-500">{userVote?.voteOption}</span> {proposal?.description}!
+              You voted <span className="text-green-500">{userVote?.voteOption}</span> for "{proposal?.description}".
             </h3>
             <Button
               onClick={handleShareTwitter}

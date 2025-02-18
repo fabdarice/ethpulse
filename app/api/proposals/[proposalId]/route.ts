@@ -9,9 +9,9 @@ export async function GET(
 ) {
 
   try {
-    const proposal = await prisma.proposal.findMany({
+    const proposal = await prisma.proposal.findUniqueOrThrow({
       where: {
-        proposalId,
+        id: proposalId,
       },
       include: {
         aggregateVote: true,
