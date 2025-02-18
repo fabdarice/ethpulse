@@ -35,24 +35,24 @@ export default function ProposalRow({ proposal, active }: ProposalProps) {
               <Users className="h-4 w-4" />
               <span className="text-sm">Total Voters</span>
             </div>
-            <span className="text-lg font-semibold">{calculateTotalVoters(proposal?.aggregateVotes)}</span>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-gray-600 mb-1 text-sm">End Date</div>
-            <span className="text-lg font-semibold">{proposal.endAt}</span>
+            <span className="text-lg font-semibold">{formatNumberWithCommas(calculateTotalVoters(proposal?.aggregateVote))}</span>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 text-gray-600 mb-1">
               <Coins className="h-4 w-4" />
               <span className="text-sm">Total Votes</span>
             </div>
-            <span className="text-lg font-semibold">{calculateTotalVotes(proposal?.aggregateVotes)} ETH</span>
+            <span className="text-lg font-semibold">{formatNumberWithCommas(calculateTotalVotes(proposal?.aggregateVote))} ETH</span>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="text-gray-600 mb-1 text-sm">End Date</div>
+            <span className="text-lg font-semibold">{proposal.endAt}</span>
           </div>
         </div>
 
         <div className="space-y-3">
-          {Object.entries(proposal.aggregateVotes.totalVotes).map(([option, votes]) => {
-            const percentage = ((parseFloat(votes) / calculateTotalVotes(proposal?.aggregateVotes)) * 100).toFixed(1);
+          {Object.entries(proposal.aggregateVote.totalVotes).map(([option, votes]) => {
+            const percentage = ((parseFloat(votes) / calculateTotalVotes(proposal?.aggregateVote)) * 100).toFixed(1);
             return (
               <div key={option} className="space-y-1">
                 <div className="flex justify-between text-sm">
@@ -61,7 +61,7 @@ export default function ProposalRow({ proposal, active }: ProposalProps) {
                 </div>
                 <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
                   <div
-                    className={`h-full ${displayColorsBasedOnVote(percentage)} transition-all duration-500`}
+                    className={`h-full ${displayColorsBasedOnVote(Number(percentage))} transition-all duration-500`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
@@ -70,15 +70,18 @@ export default function ProposalRow({ proposal, active }: ProposalProps) {
           })}
         </div>
       </CardContent>
-      <CardFooter className="justify-end">
-        <Link
-          href={`/vote/${proposal.id}`}
-          className="inline-flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-800 rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-colors group"
-        >
-          Vote Now
-          <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </CardFooter>
+      {active && (
+
+        <CardFooter className="justify-end">
+          <Link
+            href={`/vote/${proposal.id}`}
+            className="inline-flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-800 rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-colors group"
+          >
+            Vote Now
+            <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </CardFooter>
+      )}
     </Card>
 
   )

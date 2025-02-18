@@ -5,6 +5,7 @@ export function calculateTotalVotes(aggregateVote: AggregateVote): number {
 }
 
 export function calculateTotalVoters(aggregateVote: AggregateVote): number {
+  console.log(aggregateVote);
   return Object.values(aggregateVote.totalVoters).reduce((acc, voters) => acc + voters, 0);
 }
 

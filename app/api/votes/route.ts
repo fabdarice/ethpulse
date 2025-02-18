@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     const existingVote = await prisma.vote.findFirst({
       where: {
-        proposal_id: proposalId,
+        proposalId,
         wallet,
       },
     });
@@ -47,11 +47,11 @@ export async function POST(request: Request) {
       // a) Create the vote record
       const vote = await tx.vote.create({
         data: {
-          proposal_id: proposalId,
+          proposalId,
           wallet,
           signature,
-          vote_option: voteOption,
-          num_votes: formatEther(num_votes),
+          voteOption,
+          numVotes: formatEther(num_votes),
         },
       });
 
@@ -63,9 +63,9 @@ export async function POST(request: Request) {
         // Create one if it doesn't exist (so we have a row to lock)
         currentAggregate = await tx.aggregateVote.create({
           data: {
-            proposal_id: proposalId,
-            total_votes: {}, // start empty or some default
-            last_updated_at: new Date(),
+            proposalId,
+            totalVotes: {}, // start empty or some default
+            lastUpdatedAt: new Date(),
           },
         });
       }
@@ -101,8 +101,8 @@ export async function POST(request: Request) {
       await tx.aggregateVote.update({
         where: { id: currentAggregate.id },
         data: {
-          total_votes: newTotalVotes,
-          total_voters: newTotalVoters,
+          totalVotes: newTotalVotes,
+          totalVoters: newTotalVoters,
         },
       });
 

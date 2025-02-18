@@ -8,12 +8,12 @@ export async function GET(
   try {
     const vote = await prisma.vote.findFirst({
       where: {
-        proposal_id: proposalId,
+        proposalId,
         wallet,
       },
       select: {
-        vote_option: true,
-        num_votes: true,
+        voteOption: true,
+        numVotes: true,
       },
     });
 

@@ -8,26 +8,26 @@ export async function GET(_: Request) {
     const active = await prisma.proposal.findMany({
       where: {
         activated: true,
-        end_at: { gt: new Date() },
+        endAt: { gt: new Date() },
       },
       include: {
-        AggregateVote: true,
+        aggregateVote: true,
       },
       orderBy: {
-        updated_at: 'desc',
+        updatedAt: 'desc',
       },
     });
 
     const past = await prisma.proposal.findMany({
       where: {
         activated: true,
-        end_at: { lte: new Date() },
+        endAt: { lte: new Date() },
       },
       include: {
-        AggregateVote: true,
+        aggregateVote: true,
       },
       orderBy: {
-        updated_at: 'desc',
+        updatedAt: 'desc',
       },
     });
 
@@ -39,3 +39,23 @@ export async function GET(_: Request) {
   }
 }
 
+
+export async function POST(request: Request) {
+  try {
+    const { title, options, endDate } = await request.json();
+
+    const proposal = await prisma.proposal.create({
+      data: {
+        description: title,
+        options,
+        endAt: new Date(endDate),
+      },
+    });
+    return NextResponse.json(proposal);
+  } catch (error) {
+
+
+    console.error('Error seeeding proposal: ', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

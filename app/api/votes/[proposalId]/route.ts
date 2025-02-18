@@ -9,38 +9,38 @@ export async function GET(
   try {
     const votes = await prisma.vote.findMany({
       where: {
-        proposal_id: proposalId,
+        proposalId,
       },
       select: {
         wallet: true,
-        vote_option: true,
-        num_votes: true,
-        created_at: true,
+        voteOption: true,
+        numVotes: true,
+        createdAt: true,
       },
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc',
       },
       take: 5,
     });
 
     const totalVoters = await prisma.vote.count({
       where: {
-        proposal_id: proposalId,
+        proposalId,
       },
     });
     // Count the number of unique voters who voted "YES"
     const yesVoters = await prisma.vote.count({
       where: {
-        proposal_id: proposalId,
-        vote_option: "YES",
+        proposalId,
+        voteOption: "YES",
       },
     });
 
     // Count the number of unique voters who voted "NO"
     const noVoters = await prisma.vote.count({
       where: {
-        proposal_id: proposalId,
-        vote_option: "NO",
+        proposalId,
+        voteOption: "NO",
       },
     });
 

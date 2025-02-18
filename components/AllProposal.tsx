@@ -2,88 +2,11 @@
 
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Users, ArrowRight, Plus, Clock, CheckCircle2, Coins } from "lucide-react";
+import { Plus, Clock, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Proposal } from '@/interfaces/Proposal';
-import ProposalRow from './Proposal';
-
-
-// // Mock data for active proposals
-// const activeProposals = [
-//   {
-//     id: 1,
-//     title: "Danny Ryan as Executive Director",
-//     description: "Vote for Danny Ryan as the sole Executive Director of the Ethereum Foundation",
-//     totalVotes: 2000,
-//     totalVoters: 1170,
-//     endDate: "2025-04-30",
-//     status: "Active",
-//     options: [
-//       { name: "Strongly Approve", votes: 800, color: "bg-green-500" },
-//       { name: "Approve", votes: 700, color: "bg-green-300" },
-//       { name: "Neutral", votes: 300, color: "bg-gray-400" },
-//       { name: "Disapprove", votes: 150, color: "bg-red-300" },
-//       { name: "Strongly Disapprove", votes: 50, color: "bg-red-500" }
-//     ]
-//   },
-//   {
-//     id: 2,
-//     title: "Protocol Upgrade Proposal",
-//     description: "EIP-9999: Implementing enhanced staking mechanisms for better network security",
-//     totalVotes: 1500,
-//     totalVoters: 890,
-//     endDate: "2025-05-15",
-//     status: "Active",
-//     options: [
-//       { name: "Strongly Approve", votes: 600, color: "bg-green-500" },
-//       { name: "Approve", votes: 400, color: "bg-green-300" },
-//       { name: "Neutral", votes: 200, color: "bg-gray-400" },
-//       { name: "Disapprove", votes: 200, color: "bg-red-300" },
-//       { name: "Strongly Disapprove", votes: 100, color: "bg-red-500" }
-//     ]
-//   },
-//   {
-//     id: 3,
-//     title: "Treasury Allocation",
-//     description: "Proposal to allocate 1000 ETH for ecosystem development grants",
-//     totalVotes: 1200,
-//     totalVoters: 650,
-//     endDate: "2025-05-01",
-//     status: "Active",
-//     options: [
-//       { name: "Strongly Approve", votes: 500, color: "bg-green-500" },
-//       { name: "Approve", votes: 300, color: "bg-green-300" },
-//       { name: "Neutral", votes: 200, color: "bg-gray-400" },
-//       { name: "Disapprove", votes: 150, color: "bg-red-300" },
-//       { name: "Strongly Disapprove", votes: 50, color: "bg-red-500" }
-//     ]
-//   }
-// ];
-//
-// // Mock data for past proposals
-// const pastProposals = [
-//   {
-//     id: 4,
-//     title: "Network Fee Structure Update",
-//     description: "Proposal to implement dynamic fee adjustment mechanism",
-//     totalVotes: 3500,
-//     totalVoters: 1800,
-//     endDate: "2025-03-15",
-//     status: "Passed",
-//     result: "78% Approval"
-//   },
-//   {
-//     id: 5,
-//     title: "Governance Framework Update",
-//     description: "Updates to the decision-making process for protocol changes",
-//     totalVotes: 2800,
-//     totalVoters: 1500,
-//     endDate: "2025-03-01",
-//     status: "Rejected",
-//     result: "45% Approval"
-//   }
-// ];
+import ProposalRow from './ProposalRow';
 
 
 export default function AllProposals() {
@@ -109,6 +32,7 @@ export default function AllProposals() {
         }
 
         const { active, past } = await response.json();
+        console.log({ active, past })
         setActiveProposals(active);
         setPastProposals(past);
       } catch (error) {
@@ -138,7 +62,7 @@ export default function AllProposals() {
               Participate in shaping the future of Ethereum through governance
             </p>
           </div>
-          <Link href="/propose">
+          <Link href="/new">
             <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300">
               <Plus className="mr-2 h-4 w-4" />
               New Proposal
