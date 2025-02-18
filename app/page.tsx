@@ -4,13 +4,6 @@ import { Github, Twitter } from "lucide-react";
 import AllProposals from "@/components/AllProposal";
 
 
-interface Vote {
-  wallet: string;
-  vote_option: string;
-  num_votes: string;
-  created_at: string;
-}
-
 export default function Home() {
   return (
     <div className="min-h-screen p-3 pt-3">
@@ -20,7 +13,7 @@ export default function Home() {
           <Github className="h-4 w-4" />
           <span>Code opensource on</span>
           <a
-            href="https://github.com/fabdarice/votedannyryan"
+            href="https://github.com/fabdarice/ethpulse"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:text-blue-600 transition-colors"

@@ -23,28 +23,7 @@ export async function GET(
       take: 5,
     });
 
-    const totalVoters = await prisma.vote.count({
-      where: {
-        proposalId,
-      },
-    });
-    // Count the number of unique voters who voted "YES"
-    const yesVoters = await prisma.vote.count({
-      where: {
-        proposalId,
-        voteOption: "YES",
-      },
-    });
-
-    // Count the number of unique voters who voted "NO"
-    const noVoters = await prisma.vote.count({
-      where: {
-        proposalId,
-        voteOption: "NO",
-      },
-    });
-
-    return NextResponse.json({ votes, totalVoters, yesVoters, noVoters });
+    return NextResponse.json(votes);
   } catch (error) {
     console.error('Could not fetch recent votes: ', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

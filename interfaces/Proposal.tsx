@@ -7,4 +7,5 @@ export interface Proposal {
   createdAt: string;
   updatedAt: string;
   endAt: string;
+  options: string[];
 }

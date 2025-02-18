@@ -18,9 +18,9 @@ if (!projectId) {
 
 // Set up metadata
 const metadata = {
-  name: 'danny-ryan',
-  description: 'Vote Danny Ryan',
-  url: 'https://votedannyryan.com', // origin must match your domain & subdomain
+  name: 'Eth Pulse',
+  description: 'Eth Pulse is a dashboard to track the pulse of Ethereum hot topics',
+  url: 'https://ethpulse.io', // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 

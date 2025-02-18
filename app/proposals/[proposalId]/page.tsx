@@ -8,31 +8,35 @@ import {
 } from "@/components/ui/accordion";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { useAccount } from "wagmi";
-import { Github, Twitter, ThumbsUp, ThumbsDown, Share2, Feather as Ethereum, Wallet, Users } from "lucide-react";
+import { Github, Twitter, ThumbsUp, ThumbsDown, Share2, Feather as Ethereum, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { formatEther, parseEther } from "viem";
 import { formatNumberWithCommas, formatUSD, timeAgo, truncateAddress } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useSignMessage } from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { useRouter } from "next/router";
+import { UserVote } from "@/interfaces/UserVote";
+import { Proposal } from "@/interfaces/Proposal";
+import { calculateTotalVoters, calculateTotalVotes } from "@/helpers/voteAggregation";
+import { VotesByETH } from "@/components/VotesByETH";
+import { Vote } from "@/interfaces/Vote";
 
+const PIE_COLORS = [
+  '#22c55e',
+  '#ef4444',
+  '#3b82f6', // Blue
+  '#facc15', // Yellow
+  '#8b5cf6', // Purple
+];
 
-interface Vote {
-  wallet: string;
-  vote_option: string;
-  num_votes: string;
-  created_at: string;
-}
-
-export default function OneProposal() {
+export default function ProposalPage() {
+  const router = useRouter();
+  const { proposalId } = router.query;
   const [showVoteDialog, setShowVoteDialog] = useState(false);
-  const [userVote, setUserVote] = useState<"YES" | "NO" | null>(null);
-  const [userNumVotes, setUserNumVotes] = useState(null);
-  const [yesVoters, setYesVoters] = useState(0);
-  const [noVoters, setNoVoters] = useState(0);
+  const [userVote, setUserVote] = useState<UserVote | null>(null);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
 
   const { address, isConnected } = useAccount();
   const { toast } = useToast();
@@ -40,28 +44,47 @@ export default function OneProposal() {
   const { open } = useAppKit();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [voteData, setVoteData] = useState({
-    yesVotes: 0,
-    noVotes: 0,
-    totalVotes: 0,
-    yesPercentage: 0,
-    noPercentage: 0,
-    totalVoteUSD: 0,
-  });
-
   const [recentVotes, setRecentVotes] = useState<Vote[]>([]);
-  const [totalVoters, setTotalVoters] = useState(0);
+  const [pieData, setPieData] = useState<any[]>([]);
 
-  const pieData = [
-    { name: 'Yes Votes', value: voteData.yesVotes, color: '#22c55e' },
-    { name: 'No Votes', value: voteData.noVotes, color: '#ef4444' },
-  ];
+  useEffect(() => {
+    const fetchProposal = async () => {
+      const response = await fetch(`/api/proposals/${proposalId}`);
+      const data = await response.json();
+      if (!response.ok) {
+        toast({
+          title: "Error fetching proposal",
+          description: data.error,
+          variant: "destructive"
+        })
+        return;
+      }
+
+      setProposal(data);
+    }
+
+    fetchProposal();
+  }, [proposalId])
+
+  useEffect(() => {
+
+    if (!proposal || !proposal.aggregateVote || proposal.aggregateVote.totalVoters === null) return;
+
+    const totalVoters = proposal?.aggregateVote.totalVoters;
+
+    const data = Object.entries(totalVoters).map(([option, numVoters], index) => ({
+      name: option,
+      value: numVoters,
+      color: PIE_COLORS[index % PIE_COLORS.length]
+    }))
+    setPieData(data)
+
+  }, [proposal?.id])
 
   useEffect(() => {
     const fetchUserVote = async () => {
       if (isConnected && address) {
         try {
-          const proposalId = process.env.NEXT_PUBLIC_PROPOSAL_ID;
           const response = await fetch(`/api/votes/${proposalId}/${address}`);
 
           if (!response.ok) {
@@ -73,9 +96,8 @@ export default function OneProposal() {
             return;
           }
 
-          const data = await response.json();
-          setUserVote(data["voteOption"]);
-          setUserNumVotes(data["numVotes"]);
+          const vote = await response.json();
+          setUserVote(vote);
         } catch (error) {
           toast({
             title: "Error fetching user's vote",
@@ -87,58 +109,57 @@ export default function OneProposal() {
     };
 
     fetchUserVote();
-  }, [isConnected, address, userVote]);
+  }, [isConnected, address, userVote, proposalId]);
 
-  useEffect(() => {
-    const fetchVoteData = async () => {
-      try {
-        const proposalId = process.env.NEXT_PUBLIC_PROPOSAL_ID
-        const response = await fetch(`/api/aggregate/${proposalId}`);
-
-        if (!response.ok) {
-          toast({
-            title: "Error fetching all votes",
-            description: response.statusText,
-            variant: "destructive"
-          })
-          return;
-        }
-
-        const { aggregate, totalVoteUSD } = await response.json();
-        const yesVotesBig = parseEther(aggregate.total_votes.YES || "0");
-        const noVotesBig = parseEther(aggregate.total_votes.NO || "0");
-        const yesVotes = parseFloat(formatEther(yesVotesBig));
-        const noVotes = parseFloat(formatEther(noVotesBig));
-        const totalVotes = yesVotes + noVotes
-        const yesPercentage = totalVotes === 0 ? 0 : (yesVotes / totalVotes) * 100;
-        const noPercentage = totalVotes === 0 ? 0 : 100 - yesPercentage;
-
-        setVoteData({
-          yesVotes,
-          noVotes,
-          totalVotes,
-          yesPercentage,
-          noPercentage,
-          totalVoteUSD,
-        });
-
-      } catch (error) {
-        toast({
-          title: "Error fetching all votes",
-          description: "",
-          variant: "destructive"
-        })
-      }
-    };
-
-    fetchVoteData();
-  }, [userVote]);
-
+  // useEffect(() => {
+  //   const fetchVoteData = async () => {
+  //     try {
+  //       const proposalId = process.env.NEXT_PUBLIC_PROPOSAL_ID
+  //       const response = await fetch(`/api/aggregate/${proposalId}`);
+  //
+  //       if (!response.ok) {
+  //         toast({
+  //           title: "Error fetching all votes",
+  //           description: response.statusText,
+  //           variant: "destructive"
+  //         })
+  //         return;
+  //       }
+  //
+  //       const { aggregate, totalVoteUSD } = await response.json();
+  //       const yesVotesBig = parseEther(aggregate.total_votes.YES || "0");
+  //       const noVotesBig = parseEther(aggregate.total_votes.NO || "0");
+  //       const yesVotes = parseFloat(formatEther(yesVotesBig));
+  //       const noVotes = parseFloat(formatEther(noVotesBig));
+  //       const totalVotes = yesVotes + noVotes
+  //       const yesPercentage = totalVotes === 0 ? 0 : (yesVotes / totalVotes) * 100;
+  //       const noPercentage = totalVotes === 0 ? 0 : 100 - yesPercentage;
+  //
+  //       setVoteData({
+  //         yesVotes,
+  //         noVotes,
+  //         totalVotes,
+  //         yesPercentage,
+  //         noPercentage,
+  //         totalVoteUSD,
+  //       });
+  //
+  //     } catch (error) {
+  //       toast({
+  //         title: "Error fetching all votes",
+  //         description: "",
+  //         variant: "destructive"
+  //       })
+  //     }
+  //   };
+  //
+  //   fetchVoteData();
+  // }, [userVote]);
+  //
 
   useEffect(() => {
     const fetchRecentVotes = async () => {
       try {
-        const proposalId = process.env.NEXT_PUBLIC_PROPOSAL_ID
         const response = await fetch(`/api/votes/${proposalId}`);
 
         if (!response.ok) {
@@ -151,10 +172,7 @@ export default function OneProposal() {
         }
 
         const data = await response.json();
-        setTotalVoters(data.totalVoters);
-        setYesVoters(data.yesVoters);
-        setNoVoters(data.noVoters);
-        setRecentVotes(data.votes);
+        setRecentVotes(data);
 
       } catch (error) {
         toast({
@@ -168,17 +186,16 @@ export default function OneProposal() {
     fetchRecentVotes();
   }, [userVote]);
 
-  const handleVote = async (vote: "YES" | "NO") => {
+  const handleVote = async (voteOption: string) => {
     if (!isConnected) {
       open();
       return;
     }
 
     try {
-
       setIsLoading(true);
       const proposalId = process.env.NEXT_PUBLIC_PROPOSAL_ID;
-      const voteMessage = `I vote ${vote} for "Danny Ryan as the sole Executive Director of the Ethereum Foundation".\n\nSigning this transaction is free and will not cost you any gas.`;
+      const voteMessage = `I vote ${voteOption} for "${proposal?.description}".\n\nSigning this transaction is free and will not cost you any gas.`;
 
       const signature = await signMessageAsync({
         message: voteMessage,
@@ -189,7 +206,7 @@ export default function OneProposal() {
         proposalId,
         signature,
         wallet: address,
-        voteOption: vote,
+        voteOption,
       };
 
       // Call the API to submit the vote
@@ -212,7 +229,9 @@ export default function OneProposal() {
         return;
       }
 
-      setUserVote(vote);
+      console.log({ result })
+
+      setUserVote(result);
       setShowVoteDialog(true);
     } catch (error) {
       toast({
@@ -229,7 +248,7 @@ export default function OneProposal() {
       return;
     }
 
-    const tweetText = `I voted ${userVote} for Danny Ryan as the sole Executive Director of the Ethereum Foundation.\n\nhttps://www.votedannyryan.com/`;
+    const tweetText = `I voted ${userVote.voteOption} for "${proposal?.description}".\n\nhttps://www.ethpulse.io/${proposalId}`;
     const encodedTweet = encodeURIComponent(tweetText);
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedTweet}`;
     window.open(twitterUrl, '_blank', 'noopener,noreferrer');
@@ -243,15 +262,8 @@ export default function OneProposal() {
 
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 backdrop-blur-sm border border-blue-100">
         <h1 className="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
-          Danny Ryan as the sole Executive Director of the Ethereum Foundation
+          {proposal?.description}
         </h1>
-
-        <div className="bg-blue-50 rounded-lg p-6 mb-8 border border-blue-100 hidden sm:block">
-          <blockquote className="text-md text-center italic text-gray-700">
-            Ethereum&apos;s infancy is long past, and its adolescence, too, is now in the rear-view mirror. As a young adult, the world is riddled with complexity, false prophets, complex incentives, dead-ends, and other dangers. Everyone&apos;s true-north of what Ethereum should be and where it all should go is a bit different, but in aggregate, each decision that you make sums with all others to direct Ethereum through this critical time. Stay true to the good. Do your part in keeping Ethereum on the serendipitous path that has been cultivated since its genesis.
-          </blockquote>
-          <div className="text-right text-gray-700 pt-4 italic">-- Danny Ryan</div>
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
@@ -259,44 +271,12 @@ export default function OneProposal() {
               <h3 className="text-lg font-semibold">Vote Distribution</h3>
               <div className="text-right">
                 <div className="text-sm text-gray-600">Total Votes</div>
-                <div className="font-medium">{formatNumberWithCommas(voteData.totalVotes)} ETH</div>
-                <div className="text-sm text-gray-500">{formatUSD(voteData.totalVoteUSD)}</div>
+                <div className="font-medium">{formatNumberWithCommas(proposal ? calculateTotalVotes(proposal?.aggregateVote) : 0)} ETH</div>
+                {/* <div className="text-sm text-gray-500">{formatUSD(voteData.totalVoteUSD)}</div> */}
               </div>
             </div>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex justify-between text-sm mt-4">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                <div>
-                  <div>Yes: {voteData.yesPercentage.toFixed(2)}%</div>
-                  <div className="text-gray-600">{formatNumberWithCommas(voteData.yesVotes)} ETH</div>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-                <div>
-                  <div>No: {voteData.noPercentage.toFixed(2)}%</div>
-                  <div className="text-gray-600">{formatNumberWithCommas(voteData.noVotes)} ETH</div>
-                </div>
-              </div>
+              {proposal && <VotesByETH proposal={proposal} />}
             </div>
           </div>
 
@@ -306,26 +286,28 @@ export default function OneProposal() {
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Users className="h-6 w-6 text-blue-500 mr-2" />
-                  <span className="text-2xl font-bold">{totalVoters}</span>
+                  <span className="text-2xl font-bold">{proposal ? calculateTotalVoters(proposal?.aggregateVote) : 0}</span>
                 </div>
                 <p className="text-gray-600">Total Voters</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4 text-center">
-                  <div className="text-xl font-semibold text-green-500">{yesVoters}</div>
-                  <div className="text-sm text-gray-600">Yes Voters</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4 text-center">
-                  <div className="text-xl font-semibold text-red-500">{noVoters}</div>
-                  <div className="text-sm text-gray-600">No Voters</div>
-                </div>
-              </div>
-              <Progress
-                value={voteData.yesPercentage}
-                className="h-2 rounded-full"
-              />
-              <div className="text-sm text-gray-600 text-center">
-                {((yesVoters / totalVoters) * 100).toFixed(2)}% Yes Voters
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
@@ -335,7 +317,7 @@ export default function OneProposal() {
         {userVote ? (
           <div className="rounded-lg text-center gap-4 pb-6">
             <h3 className="text-xl mb-4 text-gray-600">
-              You voted <span className={userVote === "YES" ? "text-green-500" : "text-red-500"}>{userVote}</span> with {parseFloat(userNumVotes ?? "0").toFixed(5)} ETH
+              You voted <span className="text-green-500">{userVote.voteOption}</span> with {parseFloat(userVote.numVotes ?? "0").toFixed(5)} ETH
             </h3>
             <Button
               onClick={handleShareTwitter}
@@ -346,24 +328,19 @@ export default function OneProposal() {
           </div>
         ) : (
           <div className="flex gap-6 justify-center mb-12">
-            <Button
-              onClick={() => handleVote("YES")}
-              className="group relative flex items-center overflow-hidden bg-white hover:bg-gray-50 text-gray-800 px-10 py-6 text-lg rounded-2xl shadow-lg transition-all duration-300 border-2 border-gray-200 hover:border-gray-300"
-              disabled={isLoading}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-gray-100/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-              <ThumbsUp className="mr-3 h-5 w-5" />
-              <span className="font-medium tracking-wide">Vote YES</span>
-            </Button>
-            <Button
-              onClick={() => handleVote("NO")}
-              className="group relative flex items-center overflow-hidden bg-white hover:bg-gray-50 text-gray-800 px-10 py-6 text-lg rounded-2xl shadow-lg transition-all duration-300 border-2 border-gray-200 hover:border-gray-300"
-              disabled={isLoading}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-gray-100/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-              <ThumbsDown className="mr-3 h-5 w-5" />
-              <span className="font-medium tracking-wide">Vote NO</span>
-            </Button>
+            {proposal && proposal.options.map((option, index) => (
+              <Button
+                key={index}
+                onClick={() => handleVote(option)}
+                className="group relative flex items-center overflow-hidden bg-white hover:bg-gray-50 text-gray-800 px-10 py-6 text-lg rounded-2xl shadow-lg transition-all duration-300 border-2 border-gray-200 hover:border-gray-300"
+                disabled={isLoading}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-gray-100/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
+                <ThumbsDown className="mr-3 h-5 w-5" />
+                <span className="font-medium tracking-wide">Vote {option}</span>
+              </Button>
+
+            ))}
           </div>
         )}
 
@@ -392,16 +369,14 @@ export default function OneProposal() {
                 {/* Vote and ETH Section */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                   <span
-                    className={`text-sm sm:text-base font-medium ${vote.vote_option === 'YES' ? 'text-green-500' : 'text-red-500'
-                      }`}
-                  >
-                    {vote.vote_option}
+                    className="text-sm sm:text-base font-medium text-green-500">
+                    {vote.voteOption}
                   </span>
                   <span className="text-gray-600 text-sm sm:text-base">
-                    {parseFloat(vote.num_votes.toString()).toFixed(4)} ETH
+                    {parseFloat(vote.numVotes.toString()).toFixed(4)} ETH
                   </span>
                   <span className="text-gray-400 text-xs sm:text-sm hidden sm:block">
-                    {timeAgo(vote.created_at)}
+                    {timeAgo(vote.createdAt)}
                   </span>
                 </div>
               </div>
@@ -413,14 +388,6 @@ export default function OneProposal() {
         <div className="mt-8">
           <h2 className="text-2xl font-semibold mb-6 text-center">Frequently Asked Questions</h2>
           <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-left">
-                What is the purpose of this vote?
-              </AccordionTrigger>
-              <AccordionContent>
-                This vote is designed to showcase the Ethereum community’s support (or lack thereof) for whether Danny Ryan should become the sole Executive Director of the Ethereum Foundation.
-              </AccordionContent>
-            </AccordionItem>
             <AccordionItem value="item-2">
               <AccordionTrigger className="text-left">
                 How is my vote weighted?
@@ -436,15 +403,14 @@ export default function OneProposal() {
               <AccordionContent>
                 Yes, voting is safe. The code is public and available&nbsp;
                 <a
-                  href="https://github.com/fabdarice/votedannyryan"
+                  href="https://github.com/fabdarice/ethpulse"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:text-blue-600 transition-colors"
                 >
                   here</a>.<br />
-                It only requires a wallet signature with the following text:
-                `I vote YES|NO for Danny Ryan as the sole Executive Director of the Ethereum Foundation.
-                Signing this transaction is free and will not cost you any gas.`
+                It only requires a wallet signature.
+                Signing this transaction is free and will not cost you any gas.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
@@ -465,7 +431,7 @@ export default function OneProposal() {
           <Github className="h-4 w-4" />
           <span>Code opensource on</span>
           <a
-            href="https://github.com/fabdarice/votedannyryan"
+            href="https://github.com/fabdarice/ethpulse"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:text-blue-600 transition-colors"
@@ -495,7 +461,7 @@ export default function OneProposal() {
           </DialogHeader>
           <div className="bg-blue-50 p-6 rounded-lg text-center">
             <h3 className="text-xl mb-4">
-              You voted <span className={userVote === "YES" ? "text-green-500" : "text-red-500"}>{userVote}</span> for Danny Ryan as Executive Director!
+              You voted <span className="text-green-500">{userVote?.voteOption}</span> {proposal?.description}!
             </h3>
             <Button
               onClick={handleShareTwitter}
