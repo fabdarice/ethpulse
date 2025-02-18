@@ -6,6 +6,7 @@ import { Users, ArrowRight, Plus, Clock, CheckCircle2, Coins } from "lucide-reac
 import { Proposal } from '@/interfaces/Proposal';
 import { calculateTotalVoters, calculateTotalVotes, displayColorsBasedOnVote } from '@/helpers/voteAggregation';
 import { formatNumberWithCommas } from '@/lib/utils';
+import { formattedDate } from '@/helpers/date';
 
 interface ProposalProps {
   proposal: Proposal;
@@ -46,13 +47,14 @@ export default function ProposalRow({ proposal, active }: ProposalProps) {
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="text-gray-600 mb-1 text-sm">End Date</div>
-            <span className="text-lg font-semibold">{proposal.endAt}</span>
+            <span className="text-lg font-semibold">{formattedDate(proposal.endAt)}</span>
           </div>
         </div>
 
         <div className="space-y-3">
-          {Object.entries(proposal.aggregateVote.totalVotes).map(([option, votes]) => {
-            const percentage = ((parseFloat(votes) / calculateTotalVotes(proposal?.aggregateVote)) * 100).toFixed(1);
+          {proposal.aggregateVote && (Object.entries(proposal.aggregateVote.totalVotes).map(([option, votes]) => {
+            const totalVotes = calculateTotalVotes(proposal?.aggregateVote)
+            const percentage = totalVotes !== 0 ? ((parseFloat(votes) / totalVotes) * 100).toFixed(1) : 0;
             return (
               <div key={option} className="space-y-1">
                 <div className="flex justify-between text-sm">
@@ -67,7 +69,7 @@ export default function ProposalRow({ proposal, active }: ProposalProps) {
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
       </CardContent>
       {active && (

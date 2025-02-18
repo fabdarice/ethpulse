@@ -44,11 +44,28 @@ export async function POST(request: Request) {
   try {
     const { title, options, endDate } = await request.json();
 
+    // Initialize votes for each option to 0.
+    const initialVotes = options.reduce((acc: Record<string, string>, option: string) => {
+      acc[option] = "0";
+      return acc;
+    }, {});
+    const initialVoters = options.reduce((acc: Record<string, number>, option: string) => {
+      acc[option] = 0;
+      return acc;
+    }, {});
+
     const proposal = await prisma.proposal.create({
       data: {
         description: title,
         options,
         endAt: new Date(endDate),
+        aggregateVote: {
+          create: {
+            totalVotes: initialVotes,   // Object mapping each option to 0
+            totalVoters: initialVoters,  // Or, if you intend totalVoters to be a number, simply use 0
+            lastUpdatedAt: new Date(),
+          },
+        },
       },
     });
     return NextResponse.json(proposal);

@@ -1,11 +1,12 @@
 import { AggregateVote } from "@/interfaces/AggregateVote";
 
 export function calculateTotalVotes(aggregateVote: AggregateVote): number {
+  if (!aggregateVote) return 0;
   return Object.values(aggregateVote.totalVotes).reduce((acc, vote) => acc + Number(vote), 0);
 }
 
 export function calculateTotalVoters(aggregateVote: AggregateVote): number {
-  console.log(aggregateVote);
+  if (!aggregateVote) return 0;
   return Object.values(aggregateVote.totalVoters).reduce((acc, voters) => acc + voters, 0);
 }
 

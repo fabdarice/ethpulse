@@ -17,8 +17,8 @@ export default function NewPage() {
   const [description, setDescription] = useState('');
   const [endDate, setEndDate] = useState('');
   const [options, setOptions] = useState([
-    { name: 'Option 1', id: 1 },
-    { name: 'Option 2', id: 2 },
+    { name: '', id: 1 },
+    { name: '', id: 2 },
   ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
