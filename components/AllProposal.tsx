@@ -6,7 +6,7 @@ import { Plus, Clock, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Proposal } from '@/interfaces/Proposal';
-import ProposalRow from './ProposalRow';
+import OneProposal from './OneProposal';
 
 
 export default function AllProposals() {
@@ -77,7 +77,7 @@ export default function AllProposals() {
           </h2>
           <div className="grid gap-6">
             {activeProposals.map((proposal: Proposal) => (
-              <ProposalRow key={proposal.id} proposal={proposal} active={true} />
+              <OneProposal key={proposal.id} proposal={proposal} active={true} />
             ))}
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function AllProposals() {
           </h2>
           <div className="grid gap-6">
             {pastProposals.map((proposal) => (
-              <ProposalRow key={proposal.id} proposal={proposal} active={false} />
+              <OneProposal key={proposal.id} proposal={proposal} active={false} />
             ))}
           </div>
         </div>
