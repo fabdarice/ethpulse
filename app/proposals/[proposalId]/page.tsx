@@ -9,7 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "wagmi";
-import { Github, Twitter, ThumbsDown, Share2, Feather as Ethereum, Users } from "lucide-react";
+import { Github, Twitter, ThumbsDown, Share2, Feather as Ethereum, Users, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatNumberWithCommas, timeAgo, truncateAddress } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,7 @@ import { Proposal } from "@/interfaces/Proposal";
 import { calculateTotalVoters, calculateTotalVotes } from "@/helpers/voteAggregation";
 import { VotesByETH } from "@/components/VotesByETH";
 import { Vote } from "@/interfaces/Vote";
+import { VotesByNumber } from "@/components/VotesByNumber";
 
 const PIE_COLORS = [
   '#22c55e',
@@ -186,10 +187,13 @@ export default function ProposalPage() {
         })
         return;
       }
-
+      //
       console.log({ result })
-
-      setUserVote(result);
+      //
+      setUserVote({
+        voteOption: result.voteOption,
+        numVotes: result.numVotes,
+      });
       setShowVoteDialog(true);
     } catch (error) {
       toast({
@@ -224,17 +228,20 @@ export default function ProposalPage() {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+
           <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Vote Distribution</h3>
-              <div className="text-right">
-                <div className="text-sm text-gray-600">Total Votes</div>
-                <div className="font-medium">{formatNumberWithCommas(proposal ? calculateTotalVotes(proposal?.aggregateVote) : 0)} ETH</div>
-                {/* <div className="text-sm text-gray-500">{formatUSD(voteData.totalVoteUSD)}</div> */}
+            <h3 className="text-lg font-semibold mb-4">Vote Distribution</h3>
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <DollarSign className="h-6 w-6 text-blue-500 mr-2" />
+                  <span className="text-2xl font-bold">{formatNumberWithCommas(proposal ? calculateTotalVotes(proposal?.aggregateVote) : 0)} ETH</span>
+                </div>
+                <p className="text-gray-600">Total ETH Votes</p>
               </div>
-            </div>
-            <div className="h-64">
-              {proposal && <VotesByETH proposal={proposal} />}
+              <div className="h-64">
+                {proposal && <VotesByETH proposal={proposal} />}
+              </div>
             </div>
           </div>
 
@@ -248,24 +255,8 @@ export default function ProposalPage() {
                 </div>
                 <p className="text-gray-600">Total Voters</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+              <div className="h-64">
+                {proposal && <VotesByNumber proposal={proposal} />}
               </div>
             </div>
           </div>

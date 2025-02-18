@@ -18,7 +18,7 @@ export function displayColorsBasedOnVote(percentage: number): string {
     return "bg-green-300";
   }
   if (percentage >= 50) {
-    return "bg-gray-400";
+    return "bg-yellow-500";
   }
   if (percentage >= 30) {
     return "bg-red-300";
