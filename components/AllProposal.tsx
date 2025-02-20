@@ -56,16 +56,16 @@ export default function AllProposals() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
-              Governance Proposals
+              Ethereum Pulse
             </h1>
             <p className="text-gray-600">
-              Participate in shaping the future of Ethereum through governance
+              Debate hot Ethereum topics and vote to capture the community’s signal.<br />No decentralized governance here, just insights.
             </p>
           </div>
           <Link href="/new">
             <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300">
               <Plus className="mr-2 h-4 w-4" />
-              New Proposal
+              New Topic
             </Button>
           </Link>
         </div>
@@ -73,7 +73,7 @@ export default function AllProposals() {
         <div className="mb-12">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
             <Clock className="mr-2 h-5 w-5 text-blue-500" />
-            Active Proposals
+            Active Topics
           </h2>
           <div className="grid gap-6">
             {activeProposals.map((proposal: Proposal) => (
@@ -85,7 +85,7 @@ export default function AllProposals() {
         <div>
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
             <CheckCircle2 className="mr-2 h-5 w-5 text-gray-500" />
-            Past Proposals
+            Past Topics
           </h2>
           <div className="grid gap-6">
             {pastProposals.map((proposal) => (
