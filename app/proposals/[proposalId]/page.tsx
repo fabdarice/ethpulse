@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useAccount } from "wagmi";
 import { Share2, Feather as Ethereum, Users, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { formatNumberWithCommas, timeAgo, truncateAddress } from "@/lib/utils";
+import { formatNumberWithCommas, shortenAddress, timeAgo, truncateAddress } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useSignMessage } from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
@@ -286,9 +286,9 @@ export default function ProposalPage() {
                   {/* Truncate address on small screens */}
                   <span className="font-mono text-sm sm:text-base">
                     <span className="block sm:hidden">
-                      {truncateAddress(vote.wallet, 4)}
+                      {shortenAddress(vote.wallet, 4)}
                     </span>
-                    <span className="hidden sm:block">{vote.wallet}</span>
+                    <span className="hidden sm:block">{shortenAddress(vote.wallet, 4)}</span>
                   </span>
                 </div>
 

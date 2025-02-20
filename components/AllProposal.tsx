@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Proposal } from '@/interfaces/Proposal';
 import OneProposal from './OneProposal';
+import Image from 'next/image';
 
 
 export default function AllProposals() {
@@ -55,19 +56,14 @@ export default function AllProposals() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
-              Ethereum Pulse
-            </h1>
+            <div className="mb-4">
+
+              <Image src="/images/ethpulse.svg" width={300} height={100} alt="Ethereum Pulse" />
+            </div>
             <p className="text-gray-600">
               Debate hot Ethereum topics and vote to capture the community’s signal.<br />No decentralized governance here, just insights.
             </p>
           </div>
-          <Link href="/new">
-            <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-300">
-              <Plus className="mr-2 h-4 w-4" />
-              New Topic
-            </Button>
-          </Link>
         </div>
 
         <div className="mb-12">

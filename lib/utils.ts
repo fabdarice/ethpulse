@@ -101,3 +101,14 @@ export function formatNumberWithCommas(num: number | string): string {
   // If there's no decimal part, return the integer part
   return formattedInteger;
 }
+
+export function shortenAddress(address: string, chars: number = 4): string {
+  if (!address) return '';
+
+  // Check if address length is already short enough to not require shortening
+  if (address.length <= chars * 2 + 2) return address;
+
+  const prefix = address.slice(0, chars + 2); // "0x" is 2 chars
+  const suffix = address.slice(-chars);
+  return `${prefix}...${suffix}`;
+}
