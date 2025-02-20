@@ -1,10 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Users, ArrowRight, Plus, Clock, CheckCircle2, Coins } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Users, ArrowRight, Coins } from "lucide-react";
 import { Proposal } from '@/interfaces/Proposal';
-import { calculateTotalVoters, calculateTotalVotes, displayColorsBasedOnVote } from '@/helpers/voteAggregation';
+import { calculateTotalVoters, calculateTotalVotes } from '@/helpers/voteAggregation';
 import { formatNumberWithCommas } from '@/lib/utils';
 import { formattedDate } from '@/helpers/date';
 import { VotesByETH } from './VotesByETH';

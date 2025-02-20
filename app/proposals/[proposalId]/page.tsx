@@ -9,13 +9,12 @@ import {
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "wagmi";
-import { Github, Twitter, ThumbsDown, Share2, Feather as Ethereum, Users, DollarSign } from "lucide-react";
+import { Share2, Feather as Ethereum, Users, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatNumberWithCommas, timeAgo, truncateAddress } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useSignMessage } from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 import { useParams } from 'next/navigation'
 import { UserVote } from "@/interfaces/UserVote";
@@ -24,14 +23,6 @@ import { calculateTotalVoters, calculateTotalVotes } from "@/helpers/voteAggrega
 import { VotesByETH } from "@/components/VotesByETH";
 import { Vote } from "@/interfaces/Vote";
 import { VotesByNumber } from "@/components/VotesByNumber";
-
-const PIE_COLORS = [
-  '#22c55e',
-  '#ef4444',
-  '#3b82f6', // Blue
-  '#facc15', // Yellow
-  '#8b5cf6', // Purple
-];
 
 export default function ProposalPage() {
 
@@ -49,9 +40,8 @@ export default function ProposalPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [recentVotes, setRecentVotes] = useState<Vote[]>([]);
-  const [pieData, setPieData] = useState<any[]>([]);
 
-  console.log({ proposalId, userVote, proposal, recentVotes, pieData })
+  console.log({ proposalId, userVote, proposal, recentVotes })
 
   useEffect(() => {
     const fetchProposal = async () => {
@@ -76,14 +66,6 @@ export default function ProposalPage() {
     if (!proposal || !proposal.aggregateVote || proposal.aggregateVote.totalVoters === null) return;
 
     const totalVoters = proposal?.aggregateVote.totalVoters;
-
-    const data = Object.entries(totalVoters).map(([option, numVoters], index) => ({
-      name: option,
-      value: numVoters,
-      color: PIE_COLORS[index % PIE_COLORS.length]
-    }))
-    setPieData(data)
-
   }, [proposal?.id])
 
   useEffect(() => {
@@ -218,10 +200,6 @@ export default function ProposalPage() {
 
   return (
     <div className="min-h-screen p-3 pt-3">
-      <div className="max-w-4xl mx-auto flex justify-end pb-3">
-        <appkit-button />
-      </div>
-
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 backdrop-blur-sm border border-blue-100">
         <h1 className="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
           {proposal?.description}
@@ -373,34 +351,6 @@ export default function ProposalPage() {
           </Accordion>
         </div>
       </div>
-
-      <footer className="text-center mt-8 text-gray-600 space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          <Github className="h-4 w-4" />
-          <span>Code opensource on</span>
-          <a
-            href="https://github.com/fabdarice/ethpulse"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:text-blue-600 transition-colors"
-          >
-            github
-          </a>
-        </div>
-        <div className="flex items-center justify-center gap-2">
-          <Twitter className="h-4 w-4" />
-          <span>Bugs? Contact</span>
-          <a
-            href="https://x.com/fabdarice"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1"
-          >
-            @fabdarice
-          </a>
-        </div>
-      </footer>
-
 
       <Dialog open={showVoteDialog} onOpenChange={setShowVoteDialog}>
         <DialogContent className="sm:max-w-md">
