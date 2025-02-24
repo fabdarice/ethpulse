@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     const vote: Vote | null = await prisma.vote.findFirst({
       orderBy: {
-        updated_at: 'asc',
+        updatedAt: 'asc',
       },
     });
 
@@ -21,31 +21,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Votes updated successfully.' }, { status: 200 });
     }
 
-    const { id, wallet, num_votes, proposal_id, vote_option } = vote;
+    const { id, wallet, numVotes, proposalId, voteOption } = vote;
 
     const newNumVotes: bigint = await getETHBalanceAllNetworks(wallet);
-    const previousNumVotes = parseEther(num_votes); // Convert string to bigint
+    const previousNumVotes = parseEther(numVotes); // Convert string to bigint
     const diff = newNumVotes - previousNumVotes;
 
     if (diff > parseEther("1") || diff < parseEther("-1")) {
-      console.warn(`Updating Balance for ${vote.wallet} for diff: ${formatEther(diff)} | new: ${formatEther(newNumVotes)} | old: ${num_votes}`);
+      console.warn(`Updating Balance for ${vote.wallet} for diff: ${formatEther(diff)} | new: ${formatEther(newNumVotes)} | old: ${numVotes}`);
     }
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.vote.update({
         where: { id },
         data: {
-          num_votes: formatEther(newNumVotes), // Store as string
-          updated_at: new Date(), // Update the timestamp
+          numVotes: formatEther(newNumVotes), // Store as string
+          updatedAt: new Date(), // Update the timestamp
         },
       });
 
       let aggregateVote: AggregateVote | null = await tx.aggregateVote.findUnique({
-        where: { proposal_id },
+        where: { proposalId },
       });
 
       if (!aggregateVote) {
-        console.error('[Update] Aggregate vote not found for proposal:', proposal_id);
+        console.error('[Update] Aggregate vote not found for proposal:', proposalId);
         return;
       }
 
@@ -56,8 +56,7 @@ export async function POST(request: NextRequest) {
           FOR UPDATE
         `;
 
-      const currentTotalVotes = aggregateVote.total_votes as Record<string, string>;
-      const voteOption = vote_option.toUpperCase();
+      const currentTotalVotes = aggregateVote.totalVotes as Record<string, string>;
 
       const existingVotes = currentTotalVotes[voteOption]
         ? parseEther(currentTotalVotes[voteOption])
@@ -66,7 +65,7 @@ export async function POST(request: NextRequest) {
       // Calculate the new total
       const updatedVotes = existingVotes + diff;
 
-      // Update the total_votes object
+      // Update the totalVotes object
       const newTotalVotes = {
         ...currentTotalVotes,
         [voteOption]: formatEther(updatedVotes),
@@ -76,8 +75,8 @@ export async function POST(request: NextRequest) {
       await tx.aggregateVote.update({
         where: { id: aggregateVote.id },
         data: {
-          total_votes: newTotalVotes,
-          last_updated_at: new Date(),
+          totalVotes: newTotalVotes,
+          updatedAt: new Date(),
         },
       });
     });

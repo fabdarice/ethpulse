@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useAccount } from "wagmi";
 import { Share2, Feather as Ethereum, Users, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { formatNumberWithCommas, shortenAddress, timeAgo, truncateAddress } from "@/lib/utils";
+import { formatNumberWithCommas, shortenAddress, timeAgo } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useSignMessage } from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
@@ -41,8 +41,6 @@ export default function ProposalPage() {
 
   const [recentVotes, setRecentVotes] = useState<Vote[]>([]);
 
-  console.log({ proposalId, userVote, proposal, recentVotes })
-
   useEffect(() => {
     const fetchProposal = async () => {
       const response = await fetch(`/api/proposals/${proposalId}`);
@@ -61,12 +59,6 @@ export default function ProposalPage() {
 
     fetchProposal();
   }, [proposalId])
-
-  useEffect(() => {
-    if (!proposal || !proposal.aggregateVote || proposal.aggregateVote.totalVoters === null) return;
-
-    const totalVoters = proposal?.aggregateVote.totalVoters;
-  }, [proposal?.id])
 
   useEffect(() => {
     const fetchUserVote = async () => {
@@ -169,9 +161,6 @@ export default function ProposalPage() {
         })
         return;
       }
-      //
-      console.log({ result })
-      //
       setUserVote({
         voteOption: result.voteOption,
         numVotes: result.numVotes,

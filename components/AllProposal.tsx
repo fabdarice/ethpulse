@@ -1,8 +1,6 @@
 "use client";
 
-import Link from 'next/link';
-import { Button } from "@/components/ui/button";
-import { Plus, Clock, CheckCircle2 } from "lucide-react";
+import { Clock, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Proposal } from '@/interfaces/Proposal';
@@ -14,8 +12,6 @@ export default function AllProposals() {
   const { toast } = useToast();
   const [activeProposals, setActiveProposals] = useState<Proposal[] | []>([]);
   const [pastProposals, setPastProposals] = useState<Proposal[] | []>([]);
-
-  console.log({ activeProposals, pastProposals })
 
   useEffect(() => {
     const fetchAllProposals = async () => {
@@ -33,7 +29,6 @@ export default function AllProposals() {
         }
 
         const { active, past } = await response.json();
-        console.log({ active, past })
         setActiveProposals(active);
         setPastProposals(past);
       } catch (error) {

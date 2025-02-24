@@ -6,6 +6,9 @@ import { formatEther, parseEther } from 'viem';
 
 const prisma = new PrismaClient();
 
+
+// Vote on a proposal
+// POST /api/votes
 export async function POST(request: Request) {
   try {
     const { proposalId, signature, wallet, voteOption } = await request.json();
@@ -39,11 +42,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
-    console.log("ENTER 1")
-
     // 3) Calculate number of votes based on ETH holdings across EVM chains
     const numVotes: bigint = await getETHBalanceAllNetworks(wallet);
-    console.log("ENTER 2")
 
     // 3) Use transaction WITH row-level locking
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -68,12 +68,10 @@ export async function POST(request: Request) {
           data: {
             proposalId,
             totalVotes: {}, // start empty or some default
-            lastUpdatedAt: new Date(),
+            updatedAt: new Date(),
           },
         });
       }
-
-      console.log("ENTER 3")
 
       // c) Lock that row in Postgres: SELECT ... FOR UPDATE
       //    This ensures only ONE transaction can modify it at a time.
@@ -82,7 +80,6 @@ export async function POST(request: Request) {
         WHERE "id" = ${currentAggregate.id} 
         FOR UPDATE
       `;
-      console.log("ENTER 4")
 
       // d) Calculate the new totals
       const newTotalVotes = {
@@ -94,8 +91,6 @@ export async function POST(request: Request) {
       };
       // Ensure total_voters is defined (if it can be undefined)
       const totalVoters = (currentAggregate.totalVoters ?? {}) as Record<string, number>;
-
-      console.log("ENTER 5")
 
       const newTotalVoters = {
         ...totalVoters,
@@ -111,9 +106,9 @@ export async function POST(request: Request) {
         data: {
           totalVotes: newTotalVotes,
           totalVoters: newTotalVoters,
+          updatedAt: new Date(),
         },
       });
-      console.log("ENTER 6")
 
       return vote;
     });

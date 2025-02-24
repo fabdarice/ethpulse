@@ -39,13 +39,12 @@ model Vote {
 }
 
 model AggregateVote {
-  id            String   @id @default(uuid())
-  proposalId    String   @map("proposal_id")
-  totalVotes    Json     @map("total_votes")
-  totalVoters   Json     @default("{}") @map("total_voters")
-  lastUpdatedAt DateTime @map("last_updated_at")
-  updatedAt     DateTime @default(now()) @map("updated_at")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid())
+  proposalId  String   @map("proposal_id")
+  totalVotes  Json     @map("total_votes")
+  totalVoters Json     @default("{}") @map("total_voters")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   proposal Proposal @relation(fields: [proposalId], references: [id])
 

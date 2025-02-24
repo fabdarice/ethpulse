@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const aggregate = await prisma.aggregateVote.findUnique({
-      where: { proposal_id: proposalId },
+      where: { proposalId },
     });
 
     if (!aggregate) {
@@ -18,9 +18,9 @@ export async function GET(
     }
 
     let ethPrice: number = await getEthPrice();
-    const totalVoteUSD = aggregate.total_votes
+    const totalVoteUSD = aggregate.totalVotes
       // @ts-ignore
-      ? (Number(aggregate.total_votes["YES"] || "0") + Number(aggregate.total_votes["NO"] || "0")) * ethPrice
+      ? (Number(aggregate.totalVotes["YES"] || "0") + Number(aggregate.total_votes["NO"] || "0")) * ethPrice
       : 0;
 
     return NextResponse.json({ aggregate, totalVoteUSD });

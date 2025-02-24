@@ -1,9 +1,10 @@
 import { prisma } from "@/prisma/prisma";
 import { NextResponse } from "next/server";
 
+// Fetch the most recent votes for a given proposal.
 // app/api/votes/[proposalId]/route.ts
 export async function GET(
-  request: Request,
+  _: Request,
   { params: { proposalId } }: { params: { proposalId: string } }
 ) {
   try {

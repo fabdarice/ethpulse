@@ -31,7 +31,6 @@ export async function GET(_: Request) {
       },
     });
 
-    console.log({ active, past })
     return NextResponse.json({ active, past });
   } catch (error) {
     console.error('Error fetching proposals: ', error);
@@ -40,6 +39,7 @@ export async function GET(_: Request) {
 }
 
 
+/// Description: Create a new proposal with options and end date.
 export async function POST(request: Request) {
   try {
     const { title, options, endDate } = await request.json();
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
           create: {
             totalVotes: initialVotes,   // Object mapping each option to 0
             totalVoters: initialVoters,  // Or, if you intend totalVoters to be a number, simply use 0
-            lastUpdatedAt: new Date(),
+            updatedAt: new Date(),
           },
         },
       },
