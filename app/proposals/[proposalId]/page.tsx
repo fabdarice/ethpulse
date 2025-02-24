@@ -9,7 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "wagmi";
-import { Share2, Feather as Ethereum, Users, DollarSign } from "lucide-react";
+import { Share2, Feather as Ethereum, Users, Diamond } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatNumberWithCommas, shortenAddress, timeAgo } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -201,7 +201,7 @@ export default function ProposalPage() {
             <div className="space-y-6">
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <DollarSign className="h-6 w-6 text-blue-500 mr-2" />
+                  <Diamond className="h-6 w-6 text-blue-500 mr-2" />
                   <span className="text-2xl font-bold">{formatNumberWithCommas(proposal ? calculateTotalVotes(proposal?.aggregateVote) : 0)} ETH</span>
                 </div>
                 <p className="text-gray-600">Total ETH Votes</p>

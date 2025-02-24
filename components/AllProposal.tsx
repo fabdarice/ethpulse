@@ -47,12 +47,11 @@ export default function AllProposals() {
 
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 mb:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
             <div className="mb-4">
-
               <Image src="/images/ethpulse.svg" width={300} height={100} alt="Ethereum Pulse" />
             </div>
             <p className="text-gray-600">

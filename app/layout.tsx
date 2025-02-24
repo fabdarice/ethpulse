@@ -27,6 +27,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <div className="bg-[#f0f7ff] min-h-screen">
+
           <NavMenu />
 
           <div className="pt-16">
