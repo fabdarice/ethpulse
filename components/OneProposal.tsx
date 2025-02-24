@@ -23,7 +23,7 @@ export default function OneProposal({ proposal, active }: ProposalProps) {
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-xl mb-2">{proposal.description}</CardTitle>
+              <CardTitle className="text-md md:text-xl mb-2">{proposal.description}</CardTitle>
             </div>
             <span className={`px-3 py-1 rounded-full text-sm ${active
               ? 'bg-green-100 text-green-700'
