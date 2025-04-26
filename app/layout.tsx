@@ -1,19 +1,22 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { headers } from 'next/headers'
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { headers } from "next/headers";
 
-import { Providers } from './providers';
+import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/toaster";
-import { NavMenu } from '@/components/ui/nav-menu';
+import { NavMenu } from "@/components/ui/nav-menu";
 import { Github, Twitter } from "lucide-react";
 
-const inter = Inter({ subsets: ['latin'] });
-
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Ethereum Pulse',
-  description: 'A dashboard to track the pulse of ethereum hot topics',
+  title: "Ethereum Pulse",
+  description: "A dashboard to track the pulse of ethereum hot topics",
+  icons: {
+    icon: "/images/ethereum_favicon.ico",
+    shortcut: "/images/ethereum_favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -22,12 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const headersObj = headers();
-  const cookies = headersObj.get('cookie')
+  const cookies = headersObj.get("cookie");
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <div className="bg-[#f0f7ff] min-h-screen">
-
           <NavMenu />
 
           <div className="pt-16">
