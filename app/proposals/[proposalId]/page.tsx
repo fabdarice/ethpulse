@@ -326,14 +326,23 @@ export default function ProposalPage() {
                 How is my vote weighted?
               </AccordionTrigger>
               <AccordionContent>
-                Votes are weighted based on the amount of ETH, ETH staked
-                (beaconchain), ETH derivates in your connected wallet at the
-                time of voting. The following blockchains are supported: $ETH
-                (Ethereum, Base, Optimism, Arbitrum, zkSync, Linea), WETH (L1,
-                Base, Optimism, Arbitrum), rETH (L1), stETH (L1, Base, Arbitrum,
-                Optimism), Aave ETH (L1), Aave stETH (L1), Aave eETH (L1). This
-                ensures that stakeholders with greater investments in the
-                Ethereum ecosystem have a proportional influence on the outcome.
+                Votes are weighted based on the amount of ETH and ETH
+                derivatives in your connected wallet at the time of voting. We
+                track ETH assets across:
+                <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1 mt-2">
+                  <li className="transition-colors duration-200 hover:text-primary">
+                    Networks: Ethereum, Base, Optimism, Arbitrum, zkSync, Linea,
+                    Gnosis
+                  </li>
+                  <li className="transition-colors duration-200 hover:text-primary">
+                    Assets: ETH, stETH, wstETH, rETH, WETH, oETH, ankrETH, ETHx,
+                    rsETH, eETH, weETH, cmETH, mETH, and Aave derivatives (aETH,
+                    aWETH, awstETH, aweETH, arETH, aosETH, aETHx)
+                  </li>
+                  <li className="transition-colors duration-200 hover:text-primary">
+                    Validator nodes using withdrawal credentials
+                  </li>
+                </ul>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
@@ -377,7 +386,7 @@ export default function ProposalPage() {
             <h3 className="text-xl mb-4">
               You voted{" "}
               <span className="text-green-500">{userVote?.voteOption}</span> for
-              "{proposal?.description}".
+              &quot;{proposal?.description}&quot;.
             </h3>
             <Button
               onClick={handleShareTwitter}
