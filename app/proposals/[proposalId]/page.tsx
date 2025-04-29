@@ -6,9 +6,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { Button } from "@/components/ui/button";
-import { useAccount } from "wagmi";
+import { useAccount, useEnsName } from "wagmi";
 import { Share2, Feather as Ethereum, Users, Diamond } from "lucide-react";
 import {
   Dialog,
@@ -20,7 +20,6 @@ import { formatNumberWithCommas, shortenAddress, timeAgo } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useSignMessage } from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
-
 import { useParams } from "next/navigation";
 import { UserVote } from "@/interfaces/UserVote";
 import { Proposal } from "@/interfaces/Proposal";
@@ -31,6 +30,35 @@ import {
 import { VotesByETH } from "@/components/VotesByETH";
 import { Vote } from "@/interfaces/Vote";
 import { VotesByNumber } from "@/components/VotesByNumber";
+
+const VoteItem = memo(({ vote }: { vote: Vote }) => {
+  const { data: ensName } = useEnsName({
+    address: vote.wallet as `0x${string}`,
+  });
+  return (
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-4 rounded-lg border border-blue-50 hover:border-blue-200 transition-colors duration-200">
+      <div className="flex items-center mb-2 sm:mb-0">
+        <Ethereum className="mr-2 text-blue-500" />
+        <span className="font-mono text-sm sm:text-base">
+          {ensName || shortenAddress(vote.wallet, 4)}
+        </span>
+      </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+        <span className="text-sm sm:text-base font-medium text-green-500">
+          {vote.voteOption}
+        </span>
+        <span className="text-gray-600 text-sm sm:text-base">
+          {parseFloat(vote.numVotes.toString()).toFixed(4)} ETH
+        </span>
+        <span className="text-gray-400 text-xs sm:text-sm hidden sm:block">
+          {timeAgo(vote.createdAt)}
+        </span>
+      </div>
+    </div>
+  );
+});
+
+VoteItem.displayName = "VoteItem";
 
 export default function ProposalPage() {
   const params = useParams();
@@ -281,37 +309,7 @@ export default function ProposalPage() {
           <h2 className="text-xl font-semibold mb-4">Recent Votes</h2>
           <div className="space-y-4">
             {recentVotes.map((vote, index) => (
-              <div
-                key={index}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-4 rounded-lg border border-blue-50 hover:border-blue-200 transition-colors duration-200"
-              >
-                {/* Wallet Address Section */}
-                <div className="flex items-center mb-2 sm:mb-0">
-                  <Ethereum className="mr-2 text-blue-500" />
-                  {/* Truncate address on small screens */}
-                  <span className="font-mono text-sm sm:text-base">
-                    <span className="block sm:hidden">
-                      {shortenAddress(vote.wallet, 4)}
-                    </span>
-                    <span className="hidden sm:block">
-                      {shortenAddress(vote.wallet, 4)}
-                    </span>
-                  </span>
-                </div>
-
-                {/* Vote and ETH Section */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                  <span className="text-sm sm:text-base font-medium text-green-500">
-                    {vote.voteOption}
-                  </span>
-                  <span className="text-gray-600 text-sm sm:text-base">
-                    {parseFloat(vote.numVotes.toString()).toFixed(4)} ETH
-                  </span>
-                  <span className="text-gray-400 text-xs sm:text-sm hidden sm:block">
-                    {timeAgo(vote.createdAt)}
-                  </span>
-                </div>
-              </div>
+              <VoteItem key={index} vote={vote} />
             ))}
           </div>
         </div>
