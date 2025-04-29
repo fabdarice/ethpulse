@@ -34,6 +34,7 @@ import { VotesByNumber } from "@/components/VotesByNumber";
 const VoteItem = ({ vote }: { vote: Vote }) => {
   const { data: ensName } = useEnsName({
     address: vote.wallet as `0x${string}`,
+    chainId: 1,
   });
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-4 rounded-lg border border-blue-50 hover:border-blue-200 transition-colors duration-200">
