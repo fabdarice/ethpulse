@@ -6,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAccount, useEnsName } from "wagmi";
 import { Share2, Feather as Ethereum, Users, Diamond } from "lucide-react";
@@ -31,7 +31,7 @@ import { VotesByETH } from "@/components/VotesByETH";
 import { Vote } from "@/interfaces/Vote";
 import { VotesByNumber } from "@/components/VotesByNumber";
 
-const VoteItem = memo(({ vote }: { vote: Vote }) => {
+const VoteItem = ({ vote }: { vote: Vote }) => {
   const { data: ensName } = useEnsName({
     address: vote.wallet as `0x${string}`,
   });
@@ -56,9 +56,7 @@ const VoteItem = memo(({ vote }: { vote: Vote }) => {
       </div>
     </div>
   );
-});
-
-VoteItem.displayName = "VoteItem";
+};
 
 export default function ProposalPage() {
   const params = useParams();
